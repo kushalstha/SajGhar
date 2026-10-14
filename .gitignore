@@ -7,4 +7,4 @@ __pycache__/
 .env
 uploads/
 .DS_Store
-"@ | Set-Content .gitignore
+"@ | Set-Content .gitignoretest_photos/
