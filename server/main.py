@@ -1,8 +1,12 @@
 import io
+import time
 
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from PIL import Image
+from fastapi.responses import Response
+from PIL import Image, ImageOps
+from rembg import new_session, remove
+from starlette.concurrency import run_in_threadpool
 
 app = FastAPI(title="SajGhar API")
 
@@ -12,9 +16,13 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Process-Time"],
 )
 
 MAX_SIZE = 10 * 1024 * 1024  # 10 MB
+MAX_DIM = 1024
+
+session = new_session("u2net")
 
 
 @app.get("/health")
@@ -34,14 +42,22 @@ async def upload(file: UploadFile = File(...)):
     try:
         img = Image.open(io.BytesIO(data))
         img.verify()
-        img = Image.open(io.BytesIO(data))  # reopen after verify()
+        img = Image.open(io.BytesIO(data))
+        img = ImageOps.exif_transpose(img).convert("RGB")
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read image")
 
-    return {
-        "filename": file.filename,
-        "content_type": file.content_type,
-        "size_kb": round(len(data) / 1024, 1),
-        "width": img.width,
-        "height": img.height,
-    }
+    start = time.perf_counter()
+
+    img.thumbnail((MAX_DIM, MAX_DIM))
+    result = await run_in_threadpool(remove, img, session=session)
+
+    buf = io.BytesIO()
+    result.save(buf, format="PNG")
+    elapsed = time.perf_counter() - start
+
+    return Response(
+        content=buf.getvalue(),
+        media_type="image/png",
+        headers={"X-Process-Time": f"{elapsed:.2f}"},
+    )

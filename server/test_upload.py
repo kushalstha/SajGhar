@@ -14,24 +14,50 @@ def make_image_bytes(fmt="PNG", size=(120, 80)):
     return buf.getvalue()
 
 
-def test_upload_valid_png():
+def test_upload_valid_png_returns_png():
     r = client.post(
         "/upload",
         files={"file": ("shirt.png", make_image_bytes("PNG"), "image/png")},
     )
     assert r.status_code == 200
-    body = r.json()
-    assert body["filename"] == "shirt.png"
-    assert body["width"] == 120
-    assert body["height"] == 80
+    assert r.headers["content-type"] == "image/png"
+    assert r.content[:8] == b"\x89PNG\r\n\x1a\n"
 
 
-def test_upload_valid_jpeg():
+def test_upload_valid_jpeg_returns_png():
     r = client.post(
         "/upload",
         files={"file": ("shirt.jpg", make_image_bytes("JPEG"), "image/jpeg")},
     )
     assert r.status_code == 200
+    assert r.headers["content-type"] == "image/png"
+
+
+def test_upload_result_has_alpha_channel():
+    r = client.post(
+        "/upload",
+        files={"file": ("shirt.png", make_image_bytes("PNG"), "image/png")},
+    )
+    out = Image.open(io.BytesIO(r.content))
+    assert out.mode == "RGBA"
+    assert out.size == (120, 80)
+
+
+def test_upload_large_image_is_downscaled():
+    r = client.post(
+        "/upload",
+        files={"file": ("big.png", make_image_bytes("PNG", (2000, 1500)), "image/png")},
+    )
+    out = Image.open(io.BytesIO(r.content))
+    assert max(out.size) <= main.MAX_DIM
+
+
+def test_upload_returns_process_time_header():
+    r = client.post(
+        "/upload",
+        files={"file": ("shirt.png", make_image_bytes("PNG"), "image/png")},
+    )
+    assert float(r.headers["X-Process-Time"]) >= 0
 
 
 def test_upload_rejects_non_image_type():
@@ -53,7 +79,7 @@ def test_upload_rejects_corrupt_image():
 
 
 def test_upload_rejects_oversized_image(monkeypatch):
-    monkeypatch.setattr(main, "MAX_SIZE", 100)  # 100 bytes
+    monkeypatch.setattr(main, "MAX_SIZE", 100)
     r = client.post(
         "/upload",
         files={"file": ("big.png", make_image_bytes("PNG"), "image/png")},
