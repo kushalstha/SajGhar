@@ -44,6 +44,16 @@ app.mount("/files", StaticFiles(directory="uploads"), name="files")
 session = new_session("u2net")
 
 
+def item_to_dict(item: models.WardrobeItem) -> dict:
+    return {
+        "id": item.id,
+        "original_name": item.original_name,
+        "image_url": f"/files/{item.image_path}",
+        "process_time": item.process_time,
+        "created_at": item.created_at.isoformat() if item.created_at else None,
+    }
+
+
 @app.get("/health")
 def health():
     return {"status": "ok"}
@@ -99,3 +109,27 @@ async def upload(
             "X-Item-Id": str(item.id),
         },
     )
+
+
+# ---------- SAJ-23: list saved items (newest first) ----------
+@app.get("/items")
+def list_items(db: Session = Depends(get_db)):
+    items = (
+        db.query(models.WardrobeItem)
+        .order_by(models.WardrobeItem.id.desc())
+        .all()
+    )
+    return [item_to_dict(i) for i in items]
+
+
+# ---------- SAJ-25: delete an item and its file ----------
+@app.delete("/items/{item_id}", status_code=204)
+def delete_item(item_id: int, db: Session = Depends(get_db)):
+    item = db.get(models.WardrobeItem, item_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Item not found")
+
+    (UPLOAD_DIR / item.image_path).unlink(missing_ok=True)
+    db.delete(item)
+    db.commit()
+    return Response(status_code=204)
