@@ -4,6 +4,7 @@ from fastapi.testclient import TestClient
 from PIL import Image
 
 import main
+import models
 
 client = TestClient(main.app)
 
@@ -90,3 +91,19 @@ def test_upload_rejects_oversized_image(monkeypatch):
 def test_upload_missing_file():
     r = client.post("/upload")
     assert r.status_code == 422
+
+
+def test_upload_saves_record_and_file(test_db):
+    r = client.post(
+        "/upload",
+        files={"file": ("shirt.png", make_image_bytes("PNG"), "image/png")},
+    )
+    assert r.status_code == 200
+    item_id = int(r.headers["X-Item-Id"])
+
+    db = test_db()
+    item = db.get(models.WardrobeItem, item_id)
+    assert item is not None
+    assert item.original_name == "shirt.png"
+    assert (main.UPLOAD_DIR / item.image_path).exists()
+    db.close()
