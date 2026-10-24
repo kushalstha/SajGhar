@@ -11,7 +11,10 @@ from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps
 from rembg import new_session, remove
 from sqlalchemy.orm import Session
-from starlette.concurrency import run_in_threadpool
+from starlette.concurrency import run_in_threadpool 
+from pydantic import BaseModel, Field, field_validator
+
+from auth import hash_password
 
 import models
 from database import Base, engine, get_db
@@ -42,6 +45,16 @@ app.add_middleware(
 app.mount("/files", StaticFiles(directory="uploads"), name="files")
 
 session = new_session("u2net")
+class Credentials(BaseModel):
+    username: str = Field(min_length=3, max_length=50)
+    password: str = Field(min_length=6, max_length=64)
+
+    @field_validator("password")
+    @classmethod
+    def password_fits_bcrypt(cls, v):
+        if len(v.encode()) > 72:  # bcrypt's hard limit
+            raise ValueError("Password too long")
+        return v
 
 
 def item_to_dict(item: models.WardrobeItem) -> dict:
@@ -58,6 +71,17 @@ def item_to_dict(item: models.WardrobeItem) -> dict:
 def health():
     return {"status": "ok"}
 
+@app.post("/auth/register", status_code=201)
+def register(body: Credentials, db: Session = Depends(get_db)):
+    username = body.username.strip().lower()
+    if db.query(models.User).filter(models.User.username == username).first():
+        raise HTTPException(status_code=409, detail="Username already taken")
+
+    user = models.User(username=username, password_hash=hash_password(body.password))
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return {"id": user.id, "username": user.username}
 
 @app.post("/upload")
 async def upload(
