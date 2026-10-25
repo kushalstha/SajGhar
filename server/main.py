@@ -7,21 +7,22 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from PIL import Image, ImageOps
+from pydantic import BaseModel, Field, field_validator
 from rembg import new_session, remove
 from sqlalchemy.orm import Session
-from starlette.concurrency import run_in_threadpool 
-from pydantic import BaseModel, Field, field_validator
-
-from auth import hash_password
+from starlette.concurrency import run_in_threadpool
 
 import models
+from auth import (
+    create_access_token,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
 from database import Base, engine, get_db
-
-from fastapi.security import OAuth2PasswordRequestForm
-
-from auth import create_access_token, get_current_user, verify_password
 
 MAX_SIZE = 10 * 1024 * 1024  # 10 MB
 MAX_DIM = 1024
@@ -46,9 +47,13 @@ app.add_middleware(
     expose_headers=["X-Process-Time", "X-Item-Id"],
 )
 
+# Files have random unguessable names, so <img> tags can load them
+# without an auth header.
 app.mount("/files", StaticFiles(directory="uploads"), name="files")
 
 session = new_session("u2net")
+
+
 class Credentials(BaseModel):
     username: str = Field(min_length=3, max_length=50)
     password: str = Field(min_length=6, max_length=64)
@@ -71,10 +76,13 @@ def item_to_dict(item: models.WardrobeItem) -> dict:
     }
 
 
+# ---------- Health ----------
 @app.get("/health")
 def health():
     return {"status": "ok"}
 
+
+# ---------- Auth ----------
 @app.post("/auth/register", status_code=201)
 def register(body: Credentials, db: Session = Depends(get_db)):
     username = body.username.strip().lower()
@@ -86,6 +94,7 @@ def register(body: Credentials, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return {"id": user.id, "username": user.username}
+
 
 @app.post("/auth/login")
 def login(
@@ -107,10 +116,13 @@ def login(
 def me(user: models.User = Depends(get_current_user)):
     return {"id": user.id, "username": user.username}
 
+
+# ---------- Upload (protected) ----------
 @app.post("/upload")
 async def upload(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
 ):
     if not file.content_type or not file.content_type.startswith("image/"):
         raise HTTPException(status_code=400, detail="File must be an image")
@@ -141,6 +153,7 @@ async def upload(
     (UPLOAD_DIR / filename).write_bytes(png_bytes)
 
     item = models.WardrobeItem(
+        user_id=user.id,
         original_name=file.filename,
         image_path=filename,
         process_time=round(elapsed, 2),
@@ -159,21 +172,35 @@ async def upload(
     )
 
 
-# ---------- SAJ-23: list saved items (newest first) ----------
+# ---------- Items (protected, per user) ----------
 @app.get("/items")
-def list_items(db: Session = Depends(get_db)):
+def list_items(
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
     items = (
         db.query(models.WardrobeItem)
+        .filter(models.WardrobeItem.user_id == user.id)
         .order_by(models.WardrobeItem.id.desc())
         .all()
     )
     return [item_to_dict(i) for i in items]
 
 
-# ---------- SAJ-25: delete an item and its file ----------
 @app.delete("/items/{item_id}", status_code=204)
-def delete_item(item_id: int, db: Session = Depends(get_db)):
-    item = db.get(models.WardrobeItem, item_id)
+def delete_item(
+    item_id: int,
+    db: Session = Depends(get_db),
+    user: models.User = Depends(get_current_user),
+):
+    item = (
+        db.query(models.WardrobeItem)
+        .filter(
+            models.WardrobeItem.id == item_id,
+            models.WardrobeItem.user_id == user.id,
+        )
+        .first()
+    )
     if item is None:
         raise HTTPException(status_code=404, detail="Item not found")
 
