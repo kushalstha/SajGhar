@@ -19,6 +19,10 @@ from auth import hash_password
 import models
 from database import Base, engine, get_db
 
+from fastapi.security import OAuth2PasswordRequestForm
+
+from auth import create_access_token, get_current_user, verify_password
+
 MAX_SIZE = 10 * 1024 * 1024  # 10 MB
 MAX_DIM = 1024
 UPLOAD_DIR = Path("uploads")
@@ -81,6 +85,26 @@ def register(body: Credentials, db: Session = Depends(get_db)):
     db.add(user)
     db.commit()
     db.refresh(user)
+    return {"id": user.id, "username": user.username}
+
+@app.post("/auth/login")
+def login(
+    form: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db),
+):
+    username = form.username.strip().lower()
+    user = db.query(models.User).filter(models.User.username == username).first()
+    if user is None or not verify_password(form.password, user.password_hash):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect username or password",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return {"access_token": create_access_token(user.id), "token_type": "bearer"}
+
+
+@app.get("/auth/me")
+def me(user: models.User = Depends(get_current_user)):
     return {"id": user.id, "username": user.username}
 
 @app.post("/upload")
