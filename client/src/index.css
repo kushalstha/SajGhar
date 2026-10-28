@@ -5,6 +5,10 @@
   --muted: #8a8a8a;
   --line: #e8e8e6;
   --danger: #c0392b;
+  --ink: #292b24;
+  --ink-soft: #77786e;
+  --white: #ffffff;
+  --paper-deep: #f0efe9;
   font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
   color: var(--text);
   background: var(--bg);
@@ -26,6 +30,11 @@ body {
   padding: 56px 24px 96px;
 }
 
+.app.narrow {
+  max-width: 420px;
+}
+
+/* ---------- Header ---------- */
 .header {
   display: flex;
   align-items: center;
@@ -52,6 +61,22 @@ body {
   margin: 2px 0 0;
 }
 
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.user {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ---------- Sections ---------- */
 .section-title {
   display: flex;
   align-items: baseline;
@@ -68,6 +93,13 @@ body {
   letter-spacing: 0;
 }
 
+.divider {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 56px 0 40px;
+}
+
+/* ---------- Buttons and inputs ---------- */
 .upload-row {
   display: flex;
   align-items: center;
@@ -115,6 +147,39 @@ body {
   cursor: not-allowed;
 }
 
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  font: inherit;
+  font-size: 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--bg);
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.field:focus {
+  border-color: var(--text);
+}
+
+.link {
+  font: inherit;
+  font-size: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .error {
   color: var(--danger);
   font-size: 14px;
@@ -127,6 +192,7 @@ body {
   margin: 16px 0 0;
 }
 
+/* ---------- Original vs result ---------- */
 .compare {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -157,12 +223,7 @@ body {
   object-fit: contain;
 }
 
-.divider {
-  border: 0;
-  border-top: 1px solid var(--line);
-  margin: 56px 0 40px;
-}
-
+/* ---------- Wardrobe grid ---------- */
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
