@@ -4,7 +4,7 @@ import uuid
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, File, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -121,6 +121,7 @@ def me(user: models.User = Depends(get_current_user)):
 @app.post("/upload")
 async def upload(
     file: UploadFile = File(...),
+    name: str | None = Form(default=None, max_length=255),
     db: Session = Depends(get_db),
     user: models.User = Depends(get_current_user),
 ):
@@ -154,7 +155,7 @@ async def upload(
 
     item = models.WardrobeItem(
         user_id=user.id,
-        original_name=file.filename,
+        original_name=(name.strip() if name and name.strip() else file.filename),
         image_path=filename,
         process_time=round(elapsed, 2),
     )

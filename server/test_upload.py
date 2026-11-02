@@ -107,3 +107,18 @@ def test_upload_saves_record_and_file(test_db):
     assert item.original_name == "shirt.png"
     assert (main.UPLOAD_DIR / item.image_path).exists()
     db.close()
+
+
+def test_upload_saves_custom_name(test_db):
+    r = client.post(
+        "/upload",
+        files={"file": ("shirt.png", make_image_bytes("PNG"), "image/png")},
+        data={"name": "  Sage overshirt  "},
+    )
+    assert r.status_code == 200
+    item_id = int(r.headers["X-Item-Id"])
+
+    db = test_db()
+    item = db.get(models.WardrobeItem, item_id)
+    assert item.original_name == "Sage overshirt"
+    db.close()
