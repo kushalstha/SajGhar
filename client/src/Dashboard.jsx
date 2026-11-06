@@ -5,6 +5,7 @@ import WardrobePage from "./pages/WardrobePage.jsx";
 import OutfitStudioPage from "./pages/OutfitStudioPage.jsx";
 import ArMirrorPage from "./pages/ArMirrorPage.jsx";
 import PlannerPage from "./pages/PlannerPage.jsx";
+import logo from "./assets/logo.png";
 import "./Dashboard.css";
 
 export default function Dashboard({ token, username, onLogout }) {
@@ -157,7 +158,7 @@ export default function Dashboard({ token, username, onLogout }) {
     <div className="dashboard-shell">
       <aside className="dashboard-sidebar">
         <a className="dashboard-brand" href="#today" aria-label="SajGhar home">
-          <img src="/Logo.png" alt="" />
+          <img src={logo} alt="" />
           <span>SAJGHAR</span>
         </a>
 
@@ -244,7 +245,13 @@ export default function Dashboard({ token, username, onLogout }) {
         />
       )}
 
-      {activePage === "studio" && <OutfitStudioPage />}
+      {activePage === "studio" && (
+        <OutfitStudioPage
+          items={items}
+          openWardrobe={() => setActivePage("wardrobe")}
+          openMirror={() => setActivePage("mirror")}
+        />
+      )}
       {activePage === "mirror" && <ArMirrorPage />}
       {activePage === "planner" && <PlannerPage />}
       <input
