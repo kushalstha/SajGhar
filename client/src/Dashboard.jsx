@@ -5,10 +5,11 @@ import WardrobePage from "./pages/WardrobePage.jsx";
 import OutfitStudioPage from "./pages/OutfitStudioPage.jsx";
 import ArMirrorPage from "./pages/ArMirrorPage.jsx";
 import PlannerPage from "./pages/PlannerPage.jsx";
+import SettingsPage from "./pages/SettingsPage.jsx";
 import logo from "./assets/logo.png";
 import "./Dashboard.css";
 
-export default function Dashboard({ token, username, onLogout }) {
+export default function Dashboard({ token, username, onLogout, onUsernameChange }) {
   const inputRef = useRef(null);
   const wardrobeRef = useRef(null);
   const [activePage, setActivePage] = useState("today");
@@ -166,6 +167,7 @@ export default function Dashboard({ token, username, onLogout }) {
           <button
             className={`dashboard-nav-link ${activePage === "today" ? "active" : ""}`}
             onClick={() => setActivePage("today")}
+            aria-current={activePage === "today" ? "page" : undefined}
           >
             <span>01</span> Today
           </button>
@@ -175,35 +177,52 @@ export default function Dashboard({ token, username, onLogout }) {
               setActivePage("wardrobe");
               setTimeout(() => scrollToWardrobe(), 20);
             }}
+            aria-current={activePage === "wardrobe" ? "page" : undefined}
           >
             <span>02</span> My wardrobe
           </button>
           <button
             className={`dashboard-nav-link ${activePage === "studio" ? "active" : ""}`}
             onClick={() => setActivePage("studio")}
+            aria-current={activePage === "studio" ? "page" : undefined}
           >
             <span>03</span> Outfit studio
           </button>
           <button
             className={`dashboard-nav-link ${activePage === "mirror" ? "active" : ""}`}
             onClick={() => setActivePage("mirror")}
+            aria-current={activePage === "mirror" ? "page" : undefined}
           >
             <span>04</span> AR mirror
           </button>
           <button
             className={`dashboard-nav-link ${activePage === "planner" ? "active" : ""}`}
             onClick={() => setActivePage("planner")}
+            aria-current={activePage === "planner" ? "page" : undefined}
           >
             <span>05</span> Planner
+          </button>
+          <button
+            className={`dashboard-nav-link ${activePage === "settings" ? "active" : ""}`}
+            onClick={() => setActivePage("settings")}
+            aria-current={activePage === "settings" ? "page" : undefined}
+          >
+            <span>06</span> Settings
           </button>
         </nav>
 
         <div className="dashboard-profile">
-          <div className="dashboard-avatar">{initials}</div>
-          <div className="dashboard-profile-name">
-            <strong>{displayName}</strong>
-            <span>Your wardrobe</span>
-          </div>
+          <button
+            className="dashboard-profile-link"
+            onClick={() => setActivePage("settings")}
+            aria-label="Open settings"
+          >
+            <span className="dashboard-avatar">{initials}</span>
+            <span className="dashboard-profile-name">
+              <strong>{displayName}</strong>
+              <span>View profile</span>
+            </span>
+          </button>
           <button className="dashboard-signout" onClick={onLogout}>
             Sign out
           </button>
@@ -252,8 +271,16 @@ export default function Dashboard({ token, username, onLogout }) {
           openMirror={() => setActivePage("mirror")}
         />
       )}
-      {activePage === "mirror" && <ArMirrorPage />}
-      {activePage === "planner" && <PlannerPage />}
+      {activePage === "mirror" && (
+        <ArMirrorPage
+          items={items}
+          openWardrobe={() => setActivePage("wardrobe")}
+        />
+      )}
+      {activePage === "planner" && <PlannerPage items={items} />}
+      {activePage === "settings" && (
+        <SettingsPage username={username} onUsernameChange={onUsernameChange} />
+      )}
       <input
         ref={inputRef}
         type="file"

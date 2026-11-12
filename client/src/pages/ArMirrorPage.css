@@ -1,0 +1,353 @@
+.mirror-main {
+  min-height: 100vh;
+}
+
+.mirror-page {
+  max-width: 1230px;
+  margin: 0 auto;
+}
+
+.mirror-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid rgba(23, 54, 45, 0.18);
+}
+
+.mirror-eyebrow {
+  margin: 0;
+  color: #65766b;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mirror-header h1,
+.mirror-details h2 {
+  color: #17362d;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+  letter-spacing: -0.045em;
+}
+
+.mirror-header h1 {
+  margin: 12px 0 0;
+  font-size: clamp(44px, 5vw, 72px);
+  line-height: 0.98;
+}
+
+.mirror-header > p:last-child {
+  margin: 12px 0 0;
+  color: #66766d;
+  font-size: 14px;
+}
+
+.mirror-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(270px, 0.85fr);
+  align-items: start;
+  gap: 28px;
+  padding-top: 24px;
+}
+
+.mirror-stage {
+  position: relative;
+  display: grid;
+  min-height: 470px;
+  place-items: center;
+  overflow: hidden;
+  background: #bebbb2;
+}
+
+.mirror-camera-label {
+  position: absolute;
+  z-index: 3;
+  top: 16px;
+  left: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  border-radius: 20px;
+  background: #f7f3e8;
+  color: #43574d;
+  font-size: 10px;
+}
+
+.mirror-camera-label > span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #173d33;
+}
+
+.mirror-corner {
+  position: absolute;
+  z-index: 2;
+  width: 30px;
+  height: 30px;
+  border-color: rgba(255, 252, 240, 0.85);
+  border-style: solid;
+}
+
+.mirror-corner-top-left {
+  top: 48px;
+  left: 48px;
+  border-width: 2px 0 0 2px;
+}
+
+.mirror-corner-top-right {
+  top: 48px;
+  right: 48px;
+  border-width: 2px 2px 0 0;
+}
+
+.mirror-corner-bottom-left {
+  bottom: 60px;
+  left: 48px;
+  border-width: 0 0 2px 2px;
+}
+
+.mirror-corner-bottom-right {
+  right: 48px;
+  bottom: 60px;
+  border-width: 0 2px 2px 0;
+}
+
+.mirror-figure {
+  position: relative;
+  display: flex;
+  width: min(45%, 190px);
+  min-width: 140px;
+  height: 310px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 12px;
+}
+
+.mirror-head {
+  z-index: 1;
+  display: block;
+  width: 64px;
+  height: 80px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #9c9387;
+}
+
+.mirror-body {
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 226px;
+  margin-top: 10px;
+  border-radius: 64px 64px 20px 20px;
+  background: #526169;
+}
+
+.mirror-outfit-image {
+  position: absolute;
+  z-index: 2;
+  top: 88px;
+  left: 50%;
+  width: 100%;
+  height: 205px;
+  transform: translateX(-50%);
+  object-fit: contain;
+  filter: drop-shadow(0 10px 10px rgba(27, 38, 34, 0.18));
+}
+
+.mirror-preview-toggle {
+  position: absolute;
+  z-index: 3;
+  bottom: 12px;
+  left: 50%;
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  padding: 0;
+  transform: translateX(-50%);
+  border: 2px solid rgba(255, 252, 240, 0.9);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.mirror-preview-toggle span {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #fffdf4;
+  border-radius: 50%;
+  background: rgba(255, 253, 244, 0.76);
+}
+
+.mirror-preview-toggle:focus-visible,
+.mirror-item-card:focus-visible,
+.mirror-save-button:focus-visible {
+  outline: 2px solid #728575;
+  outline-offset: 3px;
+}
+
+.mirror-details {
+  min-width: 0;
+}
+
+.mirror-details h2 {
+  margin: 14px 0 12px;
+  font-size: clamp(27px, 3vw, 36px);
+  line-height: 1.05;
+}
+
+.mirror-description {
+  margin: 0 0 18px;
+  color: #596a60;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.mirror-item-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.mirror-item-card {
+  min-width: 0;
+  padding: 3px;
+  border: 1px solid #d6d0c3;
+  background: transparent;
+  color: #334940;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.mirror-item-card.selected {
+  border: 2px solid #17362d;
+  padding: 2px;
+}
+
+.mirror-item-image {
+  display: grid;
+  height: 80px;
+  place-items: center;
+  overflow: hidden;
+  background: #e5e2d9;
+}
+
+.mirror-item-card:nth-child(4n + 2) .mirror-item-image {
+  background: #e1e4dc;
+}
+
+.mirror-item-card:nth-child(4n + 3) .mirror-item-image {
+  background: #e8dfd4;
+}
+
+.mirror-item-card:nth-child(4n + 4) .mirror-item-image {
+  background: #e8e0e5;
+}
+
+.mirror-item-image img {
+  width: 100%;
+  height: 100%;
+  padding: 6px;
+  object-fit: contain;
+}
+
+.mirror-item-name {
+  display: block;
+  overflow: hidden;
+  padding: 7px 2px 3px;
+  font-size: 10px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mirror-save-button {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 0 15px;
+  border: 1px solid #17362d;
+  background: #17362d;
+  color: #fff9f1;
+  font: inherit;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.mirror-save-button:hover {
+  background: transparent;
+  color: #17362d;
+}
+
+.mirror-message {
+  margin: 12px 0 0;
+  color: #28664d;
+  font-size: 11px;
+}
+
+.mirror-message.error {
+  color: #a2483b;
+}
+
+.mirror-empty {
+  padding: 18px;
+  border: 1px solid rgba(23, 54, 45, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.mirror-empty p {
+  margin: 0;
+  color: #596a60;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 900px) {
+  .mirror-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(250px, 0.8fr);
+    gap: 20px;
+  }
+
+  .mirror-stage {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 720px) {
+  .mirror-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mirror-stage {
+    min-height: min(110vw, 500px);
+  }
+
+  .mirror-figure {
+    width: min(45%, 190px);
+    height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mirror-layout {
+    gap: 24px;
+  }
+
+  .mirror-stage {
+    min-height: 380px;
+  }
+
+  .mirror-corner-top-left,
+  .mirror-corner-bottom-left {
+    left: 24px;
+  }
+
+  .mirror-corner-top-right,
+  .mirror-corner-bottom-right {
+    right: 24px;
+  }
+}

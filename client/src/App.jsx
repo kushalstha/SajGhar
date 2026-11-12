@@ -28,9 +28,19 @@ export default function App() {
     setScreen("dashboard");
   };
 
+  const onUsernameChange = (name) => {
+    localStorage.setItem("username", name);
+    setUsername(name);
+  };
+
   if (screen === "dashboard") {
     return (
-      <Dashboard token={token} username={username} onLogout={logout} />
+      <Dashboard
+        token={token}
+        username={username}
+        onLogout={logout}
+        onUsernameChange={onUsernameChange}
+      />
     );
   }
 
